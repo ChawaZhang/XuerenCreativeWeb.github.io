@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Xueren Zhang assignment 3.js</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+			
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/three-trackballcontrols-web@0.0.2/dist/three-trackballcontrols.js"></script>
+
+		
+	</head>
+<body>
+	<!-- three.js container -->
+			<div id="container"></div>
+			
+	<!-- info on screen display -->
+
+	<script type="text/javascript">
+		var stats, scene, renderer;
+		var camera, cameraControl,shouldRaycast;
+		var raycaster = new THREE.Raycaster();
+		var mouse = new THREE.Vector2(),shouldRaycast;
+		var viewCamera, editCamera;
+		var cameraTarget = new THREE.Vector3(0,0,0);
+
+		// Trefoil knot variables
+		const numberOfMeshes = 50;
+
+		// Bootstrap the animation
+		init();
+		animate();
+
+		// init the scene
+		function init(){
+			renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor(0xffffff, 0);
+
+
+			// Append the renderer's <canvas> element to the screen
+			document.getElementById('container').appendChild(renderer.domElement);
+
+			// Resize canvas when the screen resizes
+			document.addEventListener('resize', function() {
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(width, height);
+			}, false);
+
+			// create the root scene
+			scene = new THREE.Scene();
+
+			/* Cameras */ 
+
+			// Create an empty position for the camera to look at
+			// We don't even have to add it to the scene, it's just a space marker
+
+			// create the view camera
+			viewCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 20 );
+			viewCamera.position.set(0, -2, 10); // Position the camera above and away from the scene
+			viewCamera.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add(viewCamera);
+
+			// Create the edit camera
+			editCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000 );
+			editCamera.position.set(7, 7, 7); // Position the camera above and away from the scene
+			scene.add(editCamera);
+
+			// Hook up camera trackball controls to editCamera
+			cameraControls	= new TrackballControls(editCamera);
+
+			// Assign edit camera as the initial camera to be used
+			camera = editCamera;
+
+			/* Lights */
+
+			// Add lights to the scene
+			var light1	= new THREE.AmbientLight( Math.random() * 0xffffff );
+			scene.add( light1 );
+
+			// Add random directional light at random position
+			var light2	= new THREE.DirectionalLight( Math.random() * 0xffffff );
+			light2.position.set( Math.random(), Math.random(), Math.random() ).normalize().multiplyScalar(3);
+			light2.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add( light2 );
+
+			// Add another random light
+			var light3	= new THREE.DirectionalLight( Math.random() * 0xffffff );
+			light3.position.set( Math.random(), Math.random(), Math.random() ).normalize().multiplyScalar(3);
+			light3.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add(light3);
+
+
+			/* Geometry */ 
+			
+			var geometry, material, mesh;
+			var mesh2,mesh3,mesh4;
+	
+			
+				// Create a gemetry
+				geometry = new THREE.BoxGeometry( 3, 6, 0.4 );	
+				material	= new THREE.MeshPhysicalMaterial({color: 0x666666});
+				// material.flatShading = true;
+				mesh= new THREE.Mesh( geometry, material );
+				mesh.position.set(0, 0, 0);
+				// Add mesh to the scene
+				scene.add(mesh);
+
+				// Create a  gemetry
+				geometry = new THREE.BoxGeometry( 0.1, 0.5, 0.3 );	
+				material= new THREE.MeshBasicMaterial({color: 0xEBEBEB});
+				// material.flatShading = true;
+				mesh2	= new THREE.Mesh(  geometry,material );
+				mesh2.position.set(1.5,1.5,0 );
+				// Add mesh to the scene
+				
+				scene.add(mesh2);
+
+				geometry = new THREE.BoxGeometry( 2.5, 4.5, 0.2 );	
+				// material.flatShading = true;
+				mesh3	= new THREE.Mesh(  geometry,material );
+				mesh3.position.set(0,0.3,0.11 );
+				// Add mesh to the scene
+				scene.add(mesh3);
+
+				// // Create a gemetry
+				  geometry = new THREE.CircleGeometry( 0.3, 32 );
+				  mesh4 = new THREE.Mesh( geometry, material );
+				  mesh4.position.set(0,-2.4,0.21);
+				 scene.add( mesh4);
+				
+				// Create a gemetry
+				geometry = new THREE.BoxGeometry( 0.1,0.3, 0.3 );
+				  mesh2 = new THREE.Mesh( geometry, material );
+				  mesh2.position.set(-1.5,1.8,0);
+				 scene.add( mesh2);
+
+				 geometry = new THREE.BoxGeometry( 0.1,0.3, 0.3 );
+				  mesh2 = new THREE.Mesh( geometry, material );
+				  mesh2.position.set(-1.5,1.3,0);
+				 scene.add( mesh2);
+				
+
+
+				
+
+				
+
+
+				
+				
+				
+		
+
+			
+		}
+
+		// animation loop
+		function animate() {
+			// Call the function again when the browser is free 
+			requestAnimationFrame( animate );
+
+			// do the render
+			render();
+		}
+
+		// render the scene
+		function render() {
+
+			var hits = []
+			
+            if(shouldRaycast) { // check if mouse is pressed
+                // Perform a ray cast from the camera, in the direction of the mouse in 3d space
+                raycaster.setFromCamera(mouse, camera);
+    
+                // Extract intersected objects (from a particular scene or parent Object3D)
+                var intersections = raycaster.intersectObjects(scene.children);
+
+                // Log all intersections
+                // console.log(intersections)
+
+                // Map intersected meshes to the hits array
+                hits = intersections.map(intersection => intersection.object)
+            }
+
+
+
+			// variable which is increase by Math.PI every seconds - usefull for animation
+			var time = Date.now() * Math.PI;
+
+			// update camera controls
+			cameraControls.update();
+
+			// actually render the scene
+			renderer.render( scene, camera );
+
+			// Rotate view camera around scene
+			var x = viewCamera.position.x;
+			var z = viewCamera.position.z;
+			viewCamera.position.x = x * Math.cos(0.01) + z * Math.sin(0.01);
+			viewCamera.position.z = z * Math.cos(0.01) - x * Math.sin(0.01);
+
+			// re-Rotate the camerea to look at the cameraTarget at the center of the scene
+			viewCamera.lookAt(cameraTarget);
+
+			// iterate over all objects in a scene
+			scene.traverse(function(object3d, i){
+				// Check if the current object is a THREE.Mesh (rather than a light, camera, etc.)
+				if( object3d instanceof THREE.Mesh === false )	return
+
+				// Check if current mesh is hit by the raycast
+                if(hits.includes(object3d))
+				object3d.material.color.set(Math.random() * 0xffffff);
+                
+            
+			
+				
+			})
+		}
+
+		// Listen for keypresses and change active camera and helper layers
+		document.onkeypress = function(e) {
+			if(e.keyCode === 49) {
+				camera = editCamera;
+
+			}
+
+			if(e.keyCode === 50) {
+				camera = viewCamera;
+			}
+		}
+
+		
+
+		window.addEventListener('pointermove', function (event) {
+            // calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        })
+
+        window.addEventListener('pointerdown', function (event) {
+            shouldRaycast = true;
+        })
+
+        window.addEventListener('pointerup', function (event) {
+            shouldRaycast = false;
+        })
+
+	</script>
+</body>
+</html>
