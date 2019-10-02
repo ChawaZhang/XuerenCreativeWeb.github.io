@@ -1,0 +1,457 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Xueren Zhang assignment 3.js</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		
+			
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/three-trackballcontrols-web@0.0.2/dist/three-trackballcontrols.js"></script>
+
+		<style>
+			#container, canvas, body, html {
+				width: 100vw;
+				height: 100vh;
+				overflow: hidden;
+				margin: 0;
+				padding: 0;
+			}
+
+			html,
+body {
+  position: fixed;
+  overflow: hidden;
+}
+
+#container {
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch; /* enables “momentum” (smooth) scrolling */
+}
+		</style>
+		
+	</head>
+<body>
+	<!-- three.js container -->
+			<div id="container"></div>
+			
+	<!-- info on screen display -->
+
+	<script type="text/javascript">
+		var stats, scene, renderer;
+		var camera, cameraControl,shouldRaycast;
+		var raycaster = new THREE.Raycaster();
+		var mouse = new THREE.Vector2(),shouldRaycast;
+		var viewCamera, editCamera,screen,btm,home;
+		var fakeapp1,fakeapp2,fakeapp3,fakeapp4,fakeapp5,fakeapp6,fakeapp7,fakeapp8,fakeapp9;
+		var cameraTarget = new THREE.Vector3(0,0,0);
+
+		// Trefoil knot variables
+		const numberOfMeshes = 50;
+
+		// Bootstrap the animation
+		init();
+		animate();
+
+		// init the scene
+		function init(){
+			renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor(0xffffff, 0);
+
+
+			// Append the renderer's <canvas> element to the screen
+			document.getElementById('container').appendChild(renderer.domElement);
+
+			// Resize canvas when the screen resizes
+			document.addEventListener('resize', function() {
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(width, height);
+			}, false);
+
+			// create the root scene
+			scene = new THREE.Scene();
+
+			/* Cameras */ 
+
+			// Create an empty position for the camera to look at
+			// We don't even have to add it to the scene, it's just a space marker
+
+			// create the view camera
+			viewCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 20 );
+			viewCamera.position.set(0, -2, 10); // Position the camera above and away from the scene
+			viewCamera.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add(viewCamera);
+
+			// Create the edit camera
+			editCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000 );
+			editCamera.position.set(7, 7, 7); // Position the camera above and away from the scene
+			scene.add(editCamera);
+
+			// Hook up camera trackball controls to editCamera
+			cameraControls	= new TrackballControls(editCamera);
+
+			// Assign edit camera as the initial camera to be used
+			camera = editCamera;
+
+			/* Lights */
+
+			// Add lights to the scene
+			var light1	= new THREE.AmbientLight( Math.random() * 0xffffff );
+			scene.add( light1 );
+
+			// Add random directional light at random position
+			var light2	= new THREE.DirectionalLight( Math.random() * 0xffffff );
+			light2.position.set( Math.random(), Math.random(), Math.random() ).normalize().multiplyScalar(3);
+			light2.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add( light2 );
+
+			// Add another random light
+			var light3	= new THREE.DirectionalLight( Math.random() * 0xffffff );
+			light3.position.set( Math.random(), Math.random(), Math.random() ).normalize().multiplyScalar(3);
+			light3.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add(light3);
+
+
+			/* Geometry */ 
+			
+			var geometry, material, mesh;
+			var mesh3,mesh2;
+	
+			
+				// machine
+				geometry = new THREE.BoxGeometry( 3, 6, 0.4 );	
+				material	= new THREE.MeshToonMaterial({color: 0x666666});
+				// material.flatShading = true;
+				mesh= new THREE.Mesh( geometry, material );
+				mesh.position.set(0, 0, 0);
+				// Add mesh to the scene
+				scene.add(mesh);
+
+				// btm
+				geometry = new THREE.BoxGeometry( 0.1, 0.5, 0.3 );	
+				material= new THREE.MeshBasicMaterial({color: 0x999999});
+				// material.flatShading = true;
+				btm	= new THREE.Mesh(  geometry,material );
+				btm.position.set(1.5,1.5,0 );				
+				scene.add(btm);
+
+				// screen
+				geometry = new THREE.BoxGeometry( 2.5, 4.5, 0.2 );
+				material = new THREE.MeshBasicMaterial({color: 0xEEEEEE});	
+				// material.flatShading = true;
+				screen	= new THREE.Mesh(  geometry,material );
+				screen.position.set(0,0.3,0.11 );
+				// Add mesh to the scene
+				scene.add(screen);
+
+				// home btm
+				  geometry = new THREE.CircleGeometry( 0.3, 32 );
+				  material = new THREE.MeshBasicMaterial({color: 0xF3F3F3});	
+				  home = new THREE.Mesh( geometry, material );
+				  home.position.set(0,-2.4,0.21);
+				 scene.add( home);
+				
+				// side btm
+				geometry = new THREE.BoxGeometry( 0.1,0.3, 0.3 );
+				material = new THREE.MeshBasicMaterial({color: 0x999999});	
+				  mesh2 = new THREE.Mesh( geometry, material );
+				  mesh2.position.set(-1.5,1.8,0);
+				 scene.add( mesh2);
+
+				 geometry = new THREE.BoxGeometry( 0.1,0.3, 0.3 );
+				 material = new THREE.MeshBasicMaterial({color: 0x999999});	
+				  mesh2 = new THREE.Mesh( geometry, material );
+				  mesh2.position.set(-1.5,1.3,0);
+				 scene.add( mesh2);
+
+				//camera
+				geometry = new THREE.CircleGeometry( 0.14,32 );
+				material = new THREE.MeshBasicMaterial( { color: 0x0F0D0D } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(1,2.4,-0.21 );	
+				mesh2.rotation.x = 	Math.PI;
+				scene.add( mesh2 );
+				geometry = new THREE.CircleGeometry( 0.2,32 );
+				material = new THREE.MeshBasicMaterial( { color: 0x666666 } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(1,2.4,-0.205 );	
+				mesh2.rotation.x = 	Math.PI;
+				scene.add( mesh2 );
+				//flash light
+				geometry = new THREE.CircleGeometry( 0.1,6 );
+				material = new THREE.MeshBasicMaterial( { color: 0xEEEEEE } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(1,2.1,-0.205 );	
+				mesh2.rotation.x = 	Math.PI;
+				scene.add( mesh2 );
+				//camera background
+				geometry = new THREE.CircleGeometry( 0.23,12,0,3 );
+				material = new THREE.MeshBasicMaterial( { color: 0xCCCCCC } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(1,2.4,-0.203 );	
+				mesh2.rotation.x = 	Math.PI;
+				mesh2.rotation.z = 	Math.PI;
+				scene.add( mesh2 );
+				geometry = new THREE.CircleGeometry( 0.23,12,0,3 );
+				material = new THREE.MeshBasicMaterial( { color: 0xCCCCCC } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(1,2.2,-0.203 );	
+				mesh2.rotation.x = 	Math.PI;
+				scene.add( mesh2 );
+				geometry = new THREE.BoxGeometry( 0.45,0.25,0.002 );
+				material = new THREE.MeshBasicMaterial( { color: 0xCCCCCC } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(1,2.3,-0.203 );	
+				scene.add( mesh2 );
+
+				//signal section
+				geometry = new THREE.CircleGeometry( 0.035,32);
+				material = new THREE.MeshBasicMaterial( { color: 0x0F0D0D } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(-0.5,2.7,0.21);	
+				scene.add( mesh2 );
+				geometry = new THREE.BoxGeometry( 0.7,0.02,0.002);
+				material = new THREE.MeshBasicMaterial( { color: 0x0F0D0D } );
+				mesh2 = new THREE.Mesh( geometry, material );
+				mesh2.position.set(0,2.7,0.21);	
+				scene.add( mesh2 );
+
+				//fake apps
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp1	= new THREE.Mesh(  geometry,material );
+				fakeapp1.position.set(0,1.4,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp1);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp2	= new THREE.Mesh(  geometry,material );
+				fakeapp2.position.set(-0.8,1.4,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp2);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp3	= new THREE.Mesh(  geometry,material );
+				fakeapp3.position.set(0.8,1.4,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp3);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp4	= new THREE.Mesh(  geometry,material );
+				fakeapp4.position.set(0,0.6,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp4);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp5	= new THREE.Mesh(  geometry,material );
+				fakeapp5.position.set(0.8,0.6,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp5);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp6	= new THREE.Mesh(  geometry,material );
+				fakeapp6.position.set(-0.8,0.6,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp6);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp7	= new THREE.Mesh(  geometry,material );
+				fakeapp7.position.set(0,-0.2,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp7);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp8	= new THREE.Mesh(  geometry,material );
+				fakeapp8.position.set(0.8,-0.2,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp8);
+				geometry = new THREE.BoxGeometry( 0.5, 0.5, 0.05 );
+				material = new THREE.MeshBasicMaterial({color: 0x444444});	
+				// material.flatShading = true;
+				fakeapp9	= new THREE.Mesh(  geometry,material );
+				fakeapp9.position.set(-0.8,-0.2,0.187);
+				// Add mesh to the scene
+				scene.add(fakeapp9);
+
+
+			
+		}
+
+		// animation loop
+		function animate() {
+			// Call the function again when the browser is free 
+			requestAnimationFrame( animate );
+
+			// do the render
+			render();
+		}
+
+		// render the scene
+		function render() {
+
+			var hits = []
+			
+             // check if mouse is pressed
+                // Perform a ray cast from the camera, in the direction of the mouse in 3d space
+                raycaster.setFromCamera(mouse, camera);
+    
+                // Extract intersected objects (from a particular scene or parent Object3D)
+                var intersections = raycaster.intersectObjects(scene.children);
+
+                // Log all intersections
+                // console.log(intersections)
+
+                // Map intersected meshes to the hits array
+                hits = intersections.map(intersection => intersection.object)
+				SizeChange(hits);
+				if(shouldRaycast) {
+				checkActions(hits);
+            }
+
+
+
+			// variable which is increase by Math.PI every seconds - usefull for animation
+			var time = Date.now() * Math.PI;
+
+			// update camera controls
+			cameraControls.update();
+
+			// actually render the scene
+			renderer.render( scene, camera );
+
+			// Rotate view camera around scene
+			var x = viewCamera.position.x;
+			var z = viewCamera.position.z;
+			viewCamera.position.x = x * Math.cos(0.01) + z * Math.sin(0.01);
+			viewCamera.position.z = z * Math.cos(0.01) - x * Math.sin(0.01);
+
+			// re-Rotate the camerea to look at the cameraTarget at the center of the scene
+			viewCamera.lookAt(cameraTarget);
+
+			// iterate over all objects in a scene
+			scene.traverse(function(object3d, i){
+				// Check if the current object is a THREE.Mesh (rather than a light, camera, etc.)
+				if( object3d instanceof THREE.Mesh === false )	return
+
+				// Check if current mesh is hit by the raycast
+                // if(hits.includes(object3d))
+				// object3d.material.color.set(Math.random() * 0xffffff);
+
+				
+			})
+		}
+
+		function checkActions(targets){
+			if(targets.includes(btm)){
+				console.log(targets);
+				screen.material.color.set(0x444444);
+			}
+
+			if(targets.includes(home)){
+				console.log(targets);
+				screen.material.color.set(0xEEEEEE);
+			}
+
+		}
+
+		function SizeChange(input){
+
+			
+			if(input.includes(fakeapp1))
+				fakeapp1.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp1.scale.set(1,1,1);
+			if(input.includes(fakeapp2))
+				fakeapp2.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp2.scale.set(1,1,1);		
+			if(input.includes(fakeapp3))
+				fakeapp3.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp3.scale.set(1,1,1);
+			if(input.includes(fakeapp4))
+				fakeapp4.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp4.scale.set(1,1,1);
+			if(input.includes(fakeapp5))
+				fakeapp5.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp5.scale.set(1,1,1);
+			if(input.includes(fakeapp6))
+				fakeapp6.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp6.scale.set(1,1,1);
+			if(input.includes(fakeapp7))
+				fakeapp7.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp7.scale.set(1,1,1);
+			if(input.includes(fakeapp8))
+				fakeapp8.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp8.scale.set(1,1,1);
+			if(input.includes(fakeapp9))
+				fakeapp9.scale.set(1.1,1.1,1.1);
+				else
+				fakeapp9.scale.set(1,1,1);
+
+			
+		}
+
+		// Listen for keypresses and change active camera and helper layers
+		document.onkeypress = function(e) {
+			if(e.keyCode === 49) {
+				camera = editCamera;
+
+			}
+
+			if(e.keyCode === 50) {
+				camera = viewCamera;
+			}
+		}
+
+
+		window.addEventListener('mousemove', function (event) {
+            // calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        })
+
+        window.addEventListener('mousedown', function (event) {
+            shouldRaycast = true;
+        })
+
+        window.addEventListener('mouseup', function (event) {
+            shouldRaycast = false;
+        })		
+
+		window.addEventListener('pointermove', function (event) {
+            // calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        })
+
+        window.addEventListener('pointerdown', function (event) {
+            shouldRaycast = true;
+        })
+
+        window.addEventListener('pointerup', function (event) {
+            shouldRaycast = false;
+        })
+
+	</script>
+</body>
+</html>
