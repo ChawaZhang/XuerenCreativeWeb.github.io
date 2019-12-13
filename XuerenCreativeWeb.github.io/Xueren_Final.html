@@ -1,0 +1,496 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Xueren Zhang assignment today.js</title>
+		<style>
+			.wrapper{
+				position: absolute;;
+				top:105px;
+				left:25px;
+				z-index:1000;
+				color:white !important;
+			}
+			video {
+			  width: 100px;
+			  object-fit:scale-down;
+			}
+		  </style>  
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+		<style>
+			#container, canvas, body, html {
+				width: 100vw;
+				height: 100vh;
+				overflow: hidden;
+				margin: 0;
+				padding: 0;
+			}
+			html,
+body {
+  position: fixed;
+  overflow: hidden;
+}
+#container {
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch; /* enables “momentum” (smooth) scrolling */
+}
+		</style>
+		
+	</head>
+<body>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/three-trackballcontrols-web@0.0.2/dist/three-trackballcontrols.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.0.4/peerjs.min.js"></script>
+		<script src="./call-peer.js"></script>
+
+		<div id="videos"></div>
+
+
+		<div class="wrapper">
+				<input type="text" placeholder="Find the correct room" id="id">
+				<button id="call" onclick="callPeer(document.getElementById('id').value)">Join the party</button>
+				<br/>
+				
+				<input type="text" placeholder="Write something！" id="message">
+				<button id="message" onclick="sendMessage(document.getElementById('message').value)">Send your wish</button>
+				
+				<div id="videos"></div>
+			
+				<div id="display"></div>
+			  </div>
+		<div id="info">
+				<button id='blow'>Blow the candle</button>
+				
+			</div>
+		
+	<!-- three.js container -->
+			<div id="container"></div>
+			
+			
+	<!-- info on screen display -->
+
+	<script type="text/javascript">
+		var stats, scene, renderer;
+		var camera, cameraControl,shouldRaycast;
+		var raycaster = new THREE.Raycaster();
+		var mouse = new THREE.Vector2(),shouldRaycast;
+		var viewCamera, editCamera,screen,btm,home,fire1,fire2;
+		var fakeapp1,fakeapp2,fakeapp3,fakeapp4,fakeapp5,fakeapp6,fakeapp7,fakeapp8,fakeapp9;
+		var cameraTarget = new THREE.Vector3(0,0,0);
+		var texture = new THREE.TextureLoader().load( 'http://cdn.iphonehacks.com/wp-content/uploads/2018/10/iphone-xr-screenshot-assistive-touch.jpg' );
+		var openScreen  = new THREE.MeshBasicMaterial( { map: texture } );
+		var closeScreen  = new THREE.MeshBasicMaterial({color: 0x444444});	
+		var birthdaycake = new THREE.MeshBasicMaterial({color: 0x444444});
+		ballons1=[];
+		ballons2=[];
+		ballons3=[];
+		// Trefoil knot variables
+		const numberOfMeshes = 50;
+		
+
+
+
+		// Bootstrap the animation
+		init();
+		animate();
+		// init the scene
+		function init(){
+			renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor(0xFBBF05);
+			// Append the renderer's <canvas> element to the screen
+			document.getElementById('container').appendChild(renderer.domElement);
+			// Resize canvas when the screen resizes
+			document.addEventListener('resize', function() {
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(width, height);
+			}, false);
+			// create the root scene
+			scene = new THREE.Scene();
+			/* Cameras */ 
+			// Create an empty position for the camera to look at
+			// We don't even have to add it to the scene, it's just a space marker
+			// create the view camera
+			viewCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 20 );
+			viewCamera.position.set(0, -2, 10); // Position the camera above and away from the scene
+			viewCamera.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add(viewCamera);
+			// Create the edit camera
+			editCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000 );
+			editCamera.position.set(7, 7, 7); // Position the camera above and away from the scene
+			scene.add(editCamera);
+			// Hook up camera trackball controls to editCamera
+			cameraControls	= new TrackballControls(editCamera);
+			// Assign edit camera as the initial camera to be used
+			camera = editCamera;
+			/* Lights */
+			// Add lights to the scene
+			var light1	= new THREE.AmbientLight( Math.random() * 0xffffff );
+			scene.add( light1 );
+			// Add random directional light at random position
+			var light2	= new THREE.DirectionalLight( Math.random() * 0xffffff );
+			light2.position.set( Math.random(), Math.random(), Math.random() ).normalize().multiplyScalar(3);
+			light2.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add( light2 );
+			// Add another random light
+			var light3	= new THREE.DirectionalLight( Math.random() * 0xffffff );
+			light3.position.set( Math.random(), Math.random(), Math.random() ).normalize().multiplyScalar(3);
+			light3.lookAt(cameraTarget); // Tell the camera to aim at our cameraTarget
+			scene.add(light3);
+
+
+
+
+
+
+			/* Geometry */ 
+			
+			var geometry, material, mesh,mesh4;
+			var mesh3,mesh2;
+
+				//deco
+				
+				for(let i=0;i<5;i++){
+					geometry = new THREE.DodecahedronGeometry(0.25,0);
+					
+					material=new THREE.MeshBasicMaterial({color:Math.random()*0xffffff});
+					material.flatShading=true;
+					pointX = 1.2*Math.sin(2* Math.PI * (i/5));
+					pointZ = 1.2*Math.cos(2* Math.PI *(i/5));
+					mesh4 = new THREE.Mesh(geometry,material);
+					mesh4.position.set(pointX,0.5,pointZ);
+					mesh4.rotation.set(0,0,Math.random(1));
+					mesh4.n= Math.random();
+					scene.add(mesh4);
+					ballons1.push(mesh4);
+
+				}
+
+				for(let i=0;i<8;i++){
+					geometry = new THREE.DodecahedronGeometry(0.35,0);
+					
+					material=new THREE.MeshBasicMaterial({color:Math.random()*0xffffff});
+					material.flatShading=true;
+					pointX = 1.95*Math.sin(2* Math.PI * (i/8));
+					pointZ = 1.95*Math.cos(2* Math.PI *(i/8));
+					mesh4 = new THREE.Mesh(geometry,material);
+					mesh4.position.set(pointX,-0.5,pointZ);
+					mesh4.rotation.set(0,0,Math.random(1));
+					mesh4.n= Math.random();
+					scene.add(mesh4);
+					ballons2.push(mesh4);
+
+				}
+
+				for(let i=0;i<15;i++){
+					geometry = new THREE.DodecahedronGeometry(0.45,0);
+					
+					material=new THREE.MeshBasicMaterial({color:Math.random()*0xffffff});
+					material.flatShading=true;
+					pointX = 2.8*Math.sin(2* Math.PI * (i/15));
+					pointZ = 2.8*Math.cos(2* Math.PI *(i/15));
+					mesh4 = new THREE.Mesh(geometry,material);
+					mesh4.position.set(pointX,-1.5,pointZ);
+					mesh4.rotation.set(0,0,Math.random(1));
+					mesh4.n= Math.random();
+					scene.add(mesh4);
+					ballons3.push(mesh4);
+
+				}
+
+				
+
+				for(let i=0;i<12;i++){
+					geometry = new THREE.SphereGeometry(0.3,32,32);
+					
+					material=new THREE.MeshBasicMaterial({color:0xFFD966});
+					material.flatShading=true;
+					pointX = 5*Math.sin(2* Math.PI * (i/12));
+					pointZ = 5*Math.cos(2* Math.PI *(i/12));
+					mesh4 = new THREE.Mesh(geometry,material);
+					mesh4.position.set(pointX,-2.25,pointZ);
+					mesh4.rotation.set(0,0,Math.random(1));
+					mesh4.n= Math.random();
+					scene.add(mesh4);
+					ballons2.push(mesh4);
+
+				}
+
+
+				// cakebtm
+                geometry = new THREE.CylinderGeometry( 3, 3, 2, 64 );   
+                material    = new THREE.MeshBasicMaterial({color: 0xFFF2CC});
+                // material.flatShading = true;
+                mesh= new THREE.Mesh( geometry, material );
+                mesh.position.set(0, -2, 0);
+                // Add mesh to the scene
+                scene.add(mesh);
+
+                // cakemid
+                geometry = new THREE.CylinderGeometry( 2, 2, 2, 64 );   
+                material    = new THREE.MeshBasicMaterial({color: 0xFCE5CD});
+                // material.flatShading = true;
+                mesh= new THREE.Mesh( geometry, material );
+                mesh.position.set(0, -1, 0);
+                // Add mesh to the scene
+                scene.add(mesh);
+
+                // caketop
+                geometry = new THREE.CylinderGeometry( 1.25, 1.25, 2, 64 ); 
+                material    = new THREE.MeshBasicMaterial({color: 0xF4CCCC});
+                // material.flatShading = true;
+                mesh= new THREE.Mesh( geometry, material );
+                mesh.position.set(0, 0, 0);
+                // Add mesh to the scene
+                scene.add(mesh);
+
+                // candle
+                geometry = new THREE.CylinderGeometry( 0.25, 0.25, 3, 64 ); 
+                material    = new THREE.MeshBasicMaterial({color: 0x9FC5E8});
+                // material.flatShading = true;
+                mesh= new THREE.Mesh( geometry, material );
+                mesh.position.set(0, 0.8, 0);
+                // Add mesh to the scene
+                scene.add(mesh);
+
+				// fire
+                geometry = new THREE.ConeGeometry( 0.1, 0.25, 32 );
+                material    = new THREE.MeshBasicMaterial({color: 0xFFD966});
+                // material.flatShading = true;
+                fire1= new THREE.Mesh( geometry, material );
+                fire1.position.set(0, 2.6, 0);
+                // Add mesh to the scene
+                scene.add(fire1);
+
+                geometry = new THREE.SphereGeometry( 0.1, 32, 32 );
+                material    = new THREE.MeshBasicMaterial({color: 0xFFD966});
+                // material.flatShading = true;
+                fire2= new THREE.Mesh( geometry, material );
+                fire2.position.set(0, 2.5, 0);
+                // Add mesh to the scene
+                scene.add(fire2);
+			
+				// machine
+				geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1 );	
+				material	= new THREE.MeshToonMaterial({color: 0x666666});
+				// material.flatShading = true;
+				mesh= new THREE.Mesh( geometry, material );
+				mesh.position.set(0, 0, 0);
+				// Add mesh to the scene
+				scene.add(mesh);
+				// btm
+				geometry = new THREE.BoxGeometry( 0.1,0.1, 0.1 );	
+				material= new THREE.MeshBasicMaterial({color: 0x999999});
+				// material.flatShading = true;
+				btm	= new THREE.Mesh(  geometry,material );
+				btm.position.set(0,-1.5,0 );				
+				scene.add(btm);
+				// screen
+				geometry = new THREE.BoxGeometry( 0.1, 0.1, 0.1);
+				material = new THREE.MeshBasicMaterial({color: 0xEEEEEE});	
+				// material.flatShading = true;
+				screen	= new THREE.Mesh(  geometry,material );
+				screen.position.set(0,0.3,0.11 );
+				// Add mesh to the scene
+				scene.add(screen);
+				// home btm
+				  geometry = new THREE.CircleGeometry( 0.1, 0.1 );
+				  material = new THREE.MeshBasicMaterial({color: 0xF3F3F3});	
+				  home = new THREE.Mesh( geometry, material );
+				  home.position.set(0,-2.4,0.21);
+				 scene.add( home);
+
+				 
+				
+				
+				
+			
+		}
+
+		   
+// Create an <audio> element to play the audio stream
+    // Create an <video> element to play the video stream
+			function playStream(stream) {
+      // Handle incoming audio
+      if(stream.getAudioTracks().length) {
+        console.log("Initialize audio track...")
+        var audio = document.createElement('audio')
+        audio.autoplay = true
+        
+        document.body.appendChild(audio)
+        audio.srcObject = stream
+      } 
+
+      // Handle incoming video
+      if(stream.getVideoTracks().length) {
+        console.log("Initialize video track...")
+        var video = document.createElement('video')
+        video.autoplay = true
+        
+        document.getElementById('videos').appendChild(video)
+        video.srcObject = stream
+      } 
+    }
+
+    // initialize Peer.js real-time connection
+    // initPeer(
+      // connectionCallback: fn(id: string),
+      // dataCallback: fn(message: any, peerId: string),
+      // mediaCallback: fn(stream: MediaStream, peerId: string),
+      // settings: {id: string, audio: bool, video: bool }
+    // )
+
+    // initialize Peer.js real-time connection
+    initPeer(
+      // called on initial connection (on Peer.js initialization)
+      function onConnection(myPeerId) {
+        console.log("MY ID", myPeerId)
+      },
+
+      // called on incoming data messages (every message)
+      function onData(message, peerId) {
+        console.log("ON DATA", message, peerId)
+      },
+
+      // called on incoming media stream connections (on connection)
+      // for local media stream, peerId is `undefined`
+      function onMediaStream(stream, peerId) {
+        // stream is an instance of the MediaStream class
+        // it contains both audio and video streaming tracks
+        // Here's the documentation: https://developer.mozilla.org/en-US/docs/Web/API/MediaStream
+        
+        if(peerId) {
+          console.log("ON REMOTE STREAM", peerId, stream)
+        } else {
+          console.log("ON LOCAL STREAM", stream)
+        }
+
+        // Play the stream
+        playStream(stream)
+      }, {
+        // id: 'YOUR_UNIQUE_ID',
+        video: true,
+        audio: true,
+		group: true
+      }
+    )
+
+    // Call a peer
+    // callPeer(peerId: string)
+
+    // send message to all connected peers
+    // sendMessage(message: string)
+
+
+    // send message to one peer
+    // sendMessage(message: string, peerId: string)
+
+		// animation loop
+		function animate() {
+			// Call the function again when the browser is free 
+			requestAnimationFrame( animate );
+			// do the render
+			render();
+		}
+		// render the scene
+		function render() {
+			var hits = []
+			
+             // check if mouse is pressed
+                // Perform a ray cast from the camera, in the direction of the mouse in 3d space
+                raycaster.setFromCamera(mouse, camera);
+    
+                // Extract intersected objects (from a particular scene or parent Object3D)
+                var intersections = raycaster.intersectObjects(scene.children);
+                // Log all intersections
+                // console.log(intersections)
+                // Map intersected meshes to the hits array
+                hits = intersections.map(intersection => intersection.object)
+				// SizeChange(hits);
+				if(shouldRaycast) {
+				checkActions(hits);
+            }
+			// variable which is increase by Math.PI every seconds - usefull for animation
+			var time = Date.now() * Math.PI;
+			// update camera controls
+			cameraControls.update();
+			// actually render the scene
+			renderer.render( scene, camera );
+			// Rotate view camera around scene
+			var x = viewCamera.position.x;
+			var z = viewCamera.position.z;
+			viewCamera.position.x = x * Math.cos(0.01) + z * Math.sin(0.01);
+			viewCamera.position.z = z * Math.cos(0.01) - x * Math.sin(0.01);
+			// re-Rotate the camerea to look at the cameraTarget at the center of the scene
+			viewCamera.lookAt(cameraTarget);
+			// iterate over all objects in a scene
+			scene.traverse(function(object3d, i){
+				// Check if the current object is a THREE.Mesh (rather than a light, camera, etc.)
+				if( object3d instanceof THREE.Mesh === false )	return
+				// Check if current mesh is hit by the raycast
+                // if(hits.includes(object3d))
+				// object3d.material.color.set(Math.random() * 0xffffff);
+				
+			})
+		}
+		function checkActions(targets){
+			if(targets.includes(btm)){
+				console.log(targets);
+				screen.material=closeScreen;
+			}
+			if(targets.includes(home)){
+				console.log(targets);
+				screen.material=openScreen;
+			}
+		}
+
+		
+
+		// Listen for keypresses and change active camera and helper layers
+		document.onkeypress = function(e) {
+			if(e.keyCode === 49) {
+				camera = editCamera;
+			}
+			if(e.keyCode === 50) {
+				camera = viewCamera;
+			}
+		}
+		window.addEventListener('mousemove', function (event) {
+            // calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        })
+        window.addEventListener('mousedown', function (event) {
+            shouldRaycast = true;
+        })
+        window.addEventListener('mouseup', function (event) {
+            shouldRaycast = false;
+        })		
+		window.addEventListener('pointermove', function (event) {
+            // calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        })
+        window.addEventListener('pointerdown', function (event) {
+            shouldRaycast = true;
+        })
+        window.addEventListener('pointerup', function (event) {
+            shouldRaycast = false;
+        })
+
+		
+
+		document.getElementById("blow").addEventListener('click',function(){
+				fire1.visible=false;
+				fire2.visible=false;
+				renderer.setClearColor(0x111134);
+		},false);
+	</script>
+</body>
+</html>
